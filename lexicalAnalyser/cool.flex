@@ -70,16 +70,19 @@ WHILE	[wW][hH][iI][lL][eE]
 CASE	[cC][aA][sS][eE]
 ESAC 	[eE][sS][aA][cC]
 OF	[oO][fF] 
-DARROW	=>
 NEW	[nN][eE][wW] 
 ISVOID	[iI][sS][vV][oO][iI][dD]
-STR_CONST	^"[^"\n\0]*"$
-INT_CONST	[0-9]+
-BOOL_CONST 	{TRUE} | {FALSE}
-TYPEID 		
-OBJECTID 	
-ASSIGN 		=
-NOT		
+NOT         [nN][oO][tT]
+
+TYPEID      [A-Z][a-zA-Z0-9_]*
+OBJECTID    [a-z][a-zA-Z0-9_]*
+
+STR_CONST   ^"[^"\n\0]*"$
+INT_CONST   [0-9]+
+BOOL_CONST  {TRUE} | {FALSE}
+
+DARROW  =>
+ASSIGN  =
 LE 		<=
 ERROR 		
 LET_STMT 
@@ -89,15 +92,6 @@ COMMENT
 
 
 %%
-{DIGIT} {return (DIGIT);}
-"+"	{return "+";}
-"-"	{return "-";}
-"*"	{return "*";}
-"/"	{return "/";}
-"="	{return "=";}
-"<"	{return "<";}
-">"	{return ">";}
-
 
  /*
   *  Nested comments
@@ -105,14 +99,82 @@ COMMENT
 
 
  /*
-  *  The multiple-character operators.
+  *  Operators & symbols
   */
-{DARROW}		{ return (DARROW); }
+
+{DARROW}        { return (DARROW);}
+{ASSIGN}        { return ASSIGN;}
+{DARROW}        { return DARROW;}
+
+"("             { return '(';}
+")"             { return ')';}
+"."             { return '.';}
+"@"             { return '@';}
+"~"             { return '~';}
+"*"             { return '*';}
+"/"             { return '/';}
+"+"             { return '+';}
+"-"             { return '-';}
+{LE}            { return LE;}
+"<"             { return '<';}
+"="             { return '=';}
+"{"             { return '{';}
+"}"             { return '}';}
+":"             { return ':';}
+","             { return ',';}
+";"             { return ';';}
+
 
  /*
   * Keywords are case-insensitive except for the values true and false,
   * which must begin with a lower-case letter.
   */
+
+{CLASS}         {return CLASS;}
+{ELSE}          {return ELSE;}
+{FI}            {return FI;}
+{IF}            {return IF;}
+{IN}            {return IN;}
+{INHERITS}      {return INHERITS;}
+{LET}           {return LET;}
+{LOOP}          {return LOOP;}
+{POOL}          {return POOL;}
+{THEN}          {return THEN;}
+{WHILE}         {return WHILE;}  
+{CASE}          {return CASE;}
+{ESAC}          {return ESAC;}
+{OF}            {return OF;}
+{NEW}           {return NEW;}
+{ISVOID}        {return ISVOID;}
+{NOT}           {return NOT;}
+{TRUE}          {   
+                    cool_yylval.boolean = true;
+                    return BOOL_CONST;
+                }
+{FALSE}         {
+                    cool_yylval.boolean = false;
+                    return BOOL_CONST;
+                }
+
+
+ /*
+  *  Integers & Identifiers
+  */
+
+{INT_CONST}     {
+                    cool_yylval.symbol = inttable.add_string(yytext);
+                    return INT_CONST;
+                }
+
+{TYPEID}        {
+                    cool_yylval.symbol = idtable.add_string(yytext);
+                    return TYPEID;
+                }
+{OBJECTID}      {
+                    cool_yylval.symbol = idtable.add_string(yytext);
+                    return OBJECTID;
+                }
+
 
 
  /*
