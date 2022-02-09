@@ -126,11 +126,30 @@ ERROR
 	return ERROR;
 }
 
+/* escaped newline is accepted */
+<STRING>\\\n	{ curr_lineno++; }
+
 /* String can't contain null character */
 <STRING>\0 {
 	cool_yylval.error_msg = "String contains null character";
 	BEGIN(INVALID_STRING);
 	return ERROR;
+}
+
+/* EOF cannot occur in unterminated string */
+<STRING><<EOF>> {
+	cool_yylval.error_msg = "EOF in string constant";
+	BEGIN(INVALID_STRING);
+	return ERROR;
+}
+
+/* user written escaped characters --> count them as single char and skip ahead */
+<STRING>\\n |
+<STRING>\\b |
+<STRING>\\t |
+<STRING>\\f {
+	str_len ++;
+	*string_buf_ptr++ = get_sp_char(yytext[1]);
 }
 
 /* String length < 1024 in COOL */
