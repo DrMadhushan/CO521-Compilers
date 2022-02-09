@@ -41,7 +41,7 @@ extern YYSTYPE cool_yylval;
 
 /*
  *  Add Your own definitions here
- */
+ */ stringtab
 
 %}
 
@@ -49,18 +49,23 @@ extern YYSTYPE cool_yylval;
  * Define names for regular expressions here.
  */
 
+%x STRING
+%x INVALID_STRING
+%x COMMENT
+
 DIGIT		[0-9]
 UPPER_C		[A-Z]
 LOWER_C		[a-z]
 TRUE		t[rR][uU][eE]
 FALSE		f[aA][lL][sS][eE]
 CHAR		.
+OLCMNT		--(.*)
 
 CLASS	[Cc][lL][aA][sS][sS]
 ELSE	[eE][lL][sS][eE]
-FI	[fF][iI]
-IF 	[iI][fF]
-IN 	[iI][nN]
+FI		[fF][iI]
+IF 		[iI][fF]
+IN 		[iI][nN]
 INHERITS [iI][nN][hH][eE][rR][iI][tT][sS]
 LET 	[lL][eE][tT]
 LOOP 	[lL][oO][oO][pP]
@@ -69,10 +74,10 @@ THEN 	[tT][hH][eE][nN]
 WHILE	[wW][hH][iI][lL][eE] 	
 CASE	[cC][aA][sS][eE]
 ESAC 	[eE][sS][aA][cC]
-OF	[oO][fF] 
-NEW	[nN][eE][wW] 
+OF		[oO][fF] 
+NEW		[nN][eE][wW] 
 ISVOID	[iI][sS][vV][oO][iI][dD]
-NOT         [nN][oO][tT]
+NOT     [nN][oO][tT]
 
 TYPEID      [A-Z][a-zA-Z0-9_]*
 OBJECTID    [a-z][a-zA-Z0-9_]*
@@ -84,11 +89,8 @@ BOOL_CONST  {TRUE} | {FALSE}
 DARROW  =>
 ASSIGN  =
 LE 		<=
-ERROR 		
-LET_STMT 
-
-
-COMMENT		
+LET_STMT
+ERROR 	
 
 
 %%
@@ -101,6 +103,41 @@ COMMENT
  /*
   *  Operators & symbols
   */
+
+/* Start reading string */
+\"	{
+	BEGIN(STRING)
+	str_len = 0;
+	string_buf_ptr = string_buf;
+}
+
+/* Terminate string reading */
+<STRING>\" {
+	BEGIN(INITIAL);
+	*string_buf_ptr = '\0';
+	cool_yylval.symbol = stringtable.add_string(string_buf);
+    return STR_CONST;
+}
+
+/* String can't have unescaped new line --> the programmer missed the ending " */
+<STRING>\n	{
+	cool_yylval.error_msg = "Unterminated string constant";
+	BEGIN(INVALID_STRING);
+	return ERROR;
+}
+
+/* String can't contain null character */
+<STRING>\0 {
+	cool_yylval.error_msg = "String contains null character";
+	BEGIN(INVALID_STRING);
+	return ERROR;
+}
+
+/* String length < 1024 in COOL */
+
+
+/* If error occurs (INVALID_STRING state) termination of a string happens with \" or unescaped \n */
+<INVALID_STRING>(\"|\n)	{BEGIN(INITIAL);}
 
 {DARROW}        { return (DARROW);}
 {ASSIGN}        { return ASSIGN;}
