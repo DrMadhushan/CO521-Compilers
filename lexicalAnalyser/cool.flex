@@ -34,6 +34,13 @@ extern FILE *fin; /* we read from this file */
 char string_buf[MAX_STR_CONST]; /* to assemble string constants */
 char *string_buf_ptr;
 
+int str_len;
+bool isMaxLenExceed() {
+	if (str_len >= 1024) {
+		return true;
+	}
+}
+
 extern int curr_lineno;
 extern int verbose_flag;
 
