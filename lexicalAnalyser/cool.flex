@@ -11,6 +11,7 @@
 #include <cool-parse.h>
 #include <stringtab.h>
 #include <utilities.h>
+#include <string.h>
 
 /* The compiler assumes these identifiers. */
 #define yylval cool_yylval
@@ -33,11 +34,6 @@ extern FILE *fin; /* we read from this file */
 
 char string_buf[MAX_STR_CONST]; /* to assemble string constants */
 char *string_buf_ptr;
-
-int str_len;
-bool isMaxLenExceed() {
-    return str_len >= 1024;
-}
 
 extern int curr_lineno;
 extern int verbose_flag;
@@ -175,11 +171,10 @@ LE      <=
     /* Start reading string */
 \"  {
     BEGIN(STRING);
-    str_len = 0;
     string_buf_ptr = string_buf;
 }
 
-    /* Terminate string reading */
+    /* VALID Terminate string reading */
 <STRING>\" {
     BEGIN(INITIAL);
     *string_buf_ptr = '\0';
@@ -194,7 +189,7 @@ LE      <=
     return ERROR;
 }
 
-    /* escaped newline is accepted */
+    /* VALID escaped newline is accepted but it won't be counted as actual new line (should explicitely code as "...\n..." in the string)*/
 <STRING>\\\n    { curr_lineno++; }
 
     /* String can't contain null character */
@@ -211,20 +206,38 @@ LE      <=
     return ERROR;
 }
 
-    /* user written escaped characters --> count them as single char and skip ahead */
+    /* VALID user written escaped characters --> count them as single char and skip ahead */
 <STRING>\\n |
 <STRING>\\b |
 <STRING>\\t |
 <STRING>\\f {
-    str_len ++;
+    if (strlen(string_buf) + 1 > MAX_STR_CONST - 2) {
+      cool_yylval.error_msg = "String is too long";
+      BEGIN(INVALID_STRING);
+      return ERROR;
+    }
     *string_buf_ptr++ = yytext[1];
 }
 
-    /* String length < 1024 in COOL */
+    /* VALID String length < 1024 in COOL , if valid then concatinate the string portion with the previous portion*/
 
+<STRING>[^\n\"\0]+ {
+  if (strlen(yytext) + strlen(string_buf) > MAX_STR_CONST - 1){
+    cool_yylval.error_msg = "String is too long";
+      BEGIN(INVALID_STRING);
+      return ERROR;
+  }
+  strcat(string_buf, yytext);
+  
+}
 
     /* If error occurs (INVALID_STRING state) termination of a string happens with \" or unescaped \n */
 <INVALID_STRING>(\"|\n) {BEGIN(INITIAL);}
+
+
+
+
+
 
     /* Comments */
 
