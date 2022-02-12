@@ -111,6 +111,7 @@ LE      <=
 ":"             { return ':';}
 ","             { return ',';}
 ";"             { return ';';}
+"%"             { return '%';}
 
      /*
       * Keywords are case-insensitive except for the values true and false,
@@ -171,19 +172,21 @@ LE      <=
     /* Start reading string */
 \"  {
     BEGIN(STRING);
+    memset(string_buf, 0,sizeof string_buf);
     string_buf_ptr = string_buf;
 }
 
     /* VALID Terminate string reading */
 <STRING>\" {
     BEGIN(INITIAL);
-    *string_buf_ptr = '\0';
     cool_yylval.symbol = stringtable.add_string(string_buf);
+    *string_buf_ptr = '\0';
     return STR_CONST;
 }
 
     /* String can't have unescaped new line --> the programmer missed the ending " */
 <STRING>\n  {
+    curr_lineno++;
     cool_yylval.error_msg = "Unterminated string constant";
     BEGIN(INVALID_STRING);
     return ERROR;
@@ -193,7 +196,7 @@ LE      <=
 <STRING>\\\n    { curr_lineno++; }
 
     /* String can't contain null character */
-<STRING>\0 {
+<STRING>\\0 {
     cool_yylval.error_msg = "String contains null character";
     BEGIN(INVALID_STRING);
     return ERROR;
@@ -207,36 +210,49 @@ LE      <=
 }
 
     /* VALID user written escaped characters --> count them as single char and skip ahead */
-<STRING>\\n |
-<STRING>\\b |
-<STRING>\\t |
-<STRING>\\f {
+
+<STRING>\\. {
     if (strlen(string_buf) + 1 > MAX_STR_CONST - 2) {
       cool_yylval.error_msg = "String is too long";
       BEGIN(INVALID_STRING);
       return ERROR;
     }
-    *string_buf_ptr++ = yytext[1];
+
+    if(yytext[1]=='\"'){
+    *string_buf_ptr++ = '\"';
+
+    }else if(yytext[1]=='b'){
+    *string_buf_ptr++ = '\b';
+
+    }else if(yytext[1]=='f'){
+    *string_buf_ptr++ = '\f';
+
+    }else if(yytext[1]=='n'){
+    *string_buf_ptr++ = '\n';
+
+    }else if(yytext[1]=='t'){
+    *string_buf_ptr++ = '\t';
+    
+    }else{
+    *string_buf_ptr++= yytext[1];
+    }
+
 }
 
     /* VALID String length < 1024 in COOL , if valid then concatinate the string portion with the previous portion*/
 
-<STRING>[^\n\"\0]+ {
+<STRING>. {
   if (strlen(yytext) + strlen(string_buf) > MAX_STR_CONST - 1){
     cool_yylval.error_msg = "String is too long";
       BEGIN(INVALID_STRING);
       return ERROR;
   }
-  strcat(string_buf, yytext);
+  *string_buf_ptr++ = yytext[0];
   
 }
 
     /* If error occurs (INVALID_STRING state) termination of a string happens with \" or unescaped \n */
 <INVALID_STRING>(\"|\n) {BEGIN(INITIAL);}
-
-
-
-
 
 
     /* Comments */
@@ -269,6 +285,8 @@ LE      <=
 <COMMENT>\*\) {
     BEGIN(INITIAL);
 }
+
+<COMMENT>. {}
 
     /* Whitespace and leftovers */
 
