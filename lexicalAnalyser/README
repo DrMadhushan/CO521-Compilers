@@ -204,6 +204,12 @@ Operators and symbols
 	DARROW				`=>`  
 	Assign				`<-`  
 	Less than or equal	`<=`
+
+White spaces
+------------
+
+	White space characters found outside comments and strings are ignored while `\n` is ignored but current_lineno is incremented foreach occurance.
+
 <br>
 
 ## **Testing:**
