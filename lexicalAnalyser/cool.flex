@@ -34,6 +34,7 @@ extern FILE *fin; /* we read from this file */
 
 char string_buf[MAX_STR_CONST]; /* to assemble string constants */
 char *string_buf_ptr;
+int comment_level;  /* to handle nested comments */
 
 extern int curr_lineno;
 extern int verbose_flag;
@@ -196,7 +197,7 @@ LE      <=
 <STRING>\\\n    { curr_lineno++; }
 
     /* String can't contain null character */
-<STRING>\\0 {
+<STRING>\0 {
     cool_yylval.error_msg = "String contains null character";
     BEGIN(INVALID_STRING);
     return ERROR;
@@ -267,7 +268,13 @@ LE      <=
 }
 
 \(\* {
+    comment_level = 1;
     BEGIN(COMMENT);
+}
+
+    /* occurance of a nested comment */
+<COMMENT>\(\* {
+    comment_level++;
 }
 
 <COMMENT><<EOF>> {
@@ -282,8 +289,13 @@ LE      <=
     }
 }
 
+    /* occurance of `end comment` -> check the comment level and reduce the level */
 <COMMENT>\*\) {
-    BEGIN(INITIAL);
+    if (comment_level == 1){
+        comment_level = 0;
+        BEGIN(INITIAL);
+    }
+    comment_level--;
 }
 
 <COMMENT>. {}

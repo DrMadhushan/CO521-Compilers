@@ -144,17 +144,24 @@ Comment
 **Single line comment**
 
 	Starts with -- 	
-	- any characters until the carriage return will be ignored
+	 - any characters until the carriage return will be ignored
 
 
 **Multi-line comment**
 
 	Starts with (*
-	- any character until the next *) char sequence will be ignored 
-	- Nested comments are not considered in this lexical analyser ***
-	- EOF in a multi-line comment is not allowed. It should be terminated, otherwise error returned as 'EOF in comment'
-	- Comment terminated with a *) char sequence
+	 - any character until the next *) char sequence will be ignored 
+	 - this will set the comment level to 1 (* nested comment level)
+  
+  	EOF in a multi-line comment is not allowed. 
+	 - It should be terminated, otherwise error returned as 'EOF in comment'
 
+	Nested comments handles level-wise
+	 - each occurance of `(*` will increase the comment level
+	 - each occarance of `*)` will decrease the comment level
+
+  	Comment terminated with a *) char sequence at comment level 1
+  
 	***
 	Apart from comments, an unmatched *) sequence will be considered as an error that a closing comment has no opening comment partner
 
