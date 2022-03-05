@@ -348,20 +348,21 @@
               $$ = let($1, $3, $4, $6);
             ;
     
-    case : 
+    case : /* branch(name, type_decl: Symbol; expr: Expression): Case; */
             OBJECTID ':' TYPEID DARROW expression ';'
             {
-              /*  */
+              $$ = branch($1, $3, $5);
             }
             ;
     case_expression :
+            /* At least one or more branch */
             case
             {
-              /*  */
+              $$ = single_Cases($1);
             }
             | case_expression case
             {
-              /*  */
+              $$ = append_Cases($1, single_Cases($2));
             }
             ;
 
