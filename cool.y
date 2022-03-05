@@ -199,41 +199,44 @@
     feature :
             OBJECTID '(' formal_list ')' ':' TYPEID '{' expression '}' ';' /* method definition */
             {
+              /* method(name : Symbol; formals : Formals; return_type : Symbol; expr: Expression) : Feature; */
               $$ = method($1, $3, $6, $8);
             }
             | OBJECTID ':' TYPEID ';' /* attribute definition */
             {
-              /*  */
+              /* attr(name, type_decl : Symbol; init : Expression) : Feature; */
+              $$ = attr($1, $3, no_expr());
             }
             | OBJECTID ':' TYPEID ASSIGN expression ';'  /* attribute def expression is optional */
             {
-              /*  */
+              $$ = attr($1, $3, $5);
             }
             ;
 
     feature_list :
             {
-              /*  feature list */
+              /* empty feature list -> refer (cool-tree.cc) */
+              $$ = nil_Features();
             }
             feature
             {
-              /*  */
+              $$ = single_Features($1);
             }
             | feature_list feature
             {
-              /*  */
+              $$ = append_Features($1, $2);
             }
             ;
 
     formal :
             OBJECTID ':' TYPEID
             {
-              /*  */
+              /* formal(name, type_decl: Symbol) : Formal; */
             }
             ;
     formal_list :
             {
-              /* no formals */
+              /* empty formal list */
             }
             formal
             {
