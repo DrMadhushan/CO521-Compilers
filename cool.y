@@ -149,7 +149,6 @@
     %type <expression> let_expression
     %type <expressions> expressions_block
     %type <expressions> expressions_list
-    %type <expressions> let_assign_list
     
     /* Precedence declarations go here. */
     %right ASSIGN
@@ -347,7 +346,9 @@
               $$ = let($1, $3, $4, $6);
             }
             | OBJECTID ':' TYPEID let_assign ',' let_expression
+            {
               $$ = let($1, $3, $4, $6);
+            }
             ;
     
     case : /* branch(name, type_decl: Symbol; expr: Expression): Case; */
