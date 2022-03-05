@@ -232,19 +232,21 @@
             OBJECTID ':' TYPEID
             {
               /* formal(name, type_decl: Symbol) : Formal; */
+              $$ = formal($1, $3);
             }
             ;
     formal_list :
             {
               /* empty formal list */
+              $$ = nil_Formals();
             }
             formal
             {
-              /*  */
+              $$ = single_Formals($1);
             }
             | formal_list ',' formal
             {
-              /*  */
+              $$ = append_Formals($1, $3);
             }
             ;
             
