@@ -218,7 +218,7 @@
               /* empty feature list -> refer (cool-tree.cc) */
               $$ = nil_Features();
             }
-            feature
+            | feature
             {
               $$ = single_Features($1);
             }
@@ -240,7 +240,7 @@
               /* empty formal list */
               $$ = nil_Formals();
             }
-            formal
+            | formal
             {
               $$ = single_Formals($1);
             }
@@ -278,41 +278,52 @@
             ;
 
     dispatch : /* a method call -> 3 main formats e.id(e,e,e...) , id(e,e,..) , e@type.id(e,e,....) */
+            /* format #1, #2 dispatch(expr : Expression; name : Symbol; actual : Expressions) : Expression; */
+            /* format #3 static_dispatch(expr: Expression; type_name : Symbol; name : Symbol; actual : Expressions) : Expression; */
             expression '.' OBJECTID '(' ')' /* empty args #1 */
             {
               /*  */
+              $$ = dispatch($1, $3, nil_Expressions());
             }
             | expression '.' OBJECTID '(' expression ')' /* single arg expression #1 */
             {
               /*  */
+              $$ = dispatch($1, $3, single_Expressions($5));
             }
             | expression '.' OBJECTID '(' expression expressions_list ')' /* multiple (comma seperated) expressions as argument #1 */
             {
               /*  */
+              $$ = dispatch($1, $3, append_Expressions(single_Expressions($5), $6));
             }
-            | OBJECTID '(' ')' /* empty args #2 */
+            | OBJECTID '(' ')' /* empty args #2 calls method from `self`*/
             {
               /*  */
+              $$ = dispatch(object(idtable.add_string("self")), $1, nil_Expressions());
             }
             | OBJECTID '(' expression ')' /* single arg expression #2 */
             {
               /*  */
+              $$ = dispatch(object(idtable.add_string("self")), $1, single_Expressions($3));
             }
             | OBJECTID '(' expression expressions_list ')' /* multiple (comma seperated) expressions as argument #2 */
             {
               /*  */
+              $$ = dispatch(object(idtable.add_string("self")), $1, append_Expressions(single_Expressions($3), $4));
             }
             | expression '@' TYPEID '.' OBJECTID '(' ')' /* empty args #3 */
             {
               /*  */
+              $$ = dispatch($1, $3, $5, nil_Expressions());
             }
             | expression '@' TYPEID '.' OBJECTID '(' expression ')' /* single arg expression #3 */
             {
               /*  */
+              $$ = dispatch($1, $3, $5, single_Expressions($7));
             }
             | expression '@' TYPEID '.' OBJECTID '(' expression expressions_list ')' /* multiple (comma seperated) expressions as argument #3 */
             {
               /*  */
+              $$ = dispatch($1, $3, $5, append_Expressions(single_Expressions($7), $8));
             }
 
     expression_block :
