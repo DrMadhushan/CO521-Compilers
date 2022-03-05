@@ -249,33 +249,7 @@
               $$ = append_Formals($1, single_Formals($3));
             }
             ;
-            
-    expression_block : 
-            expression ';'
-            {
-              $$ = $1
-            }
-            ;
-    expressions_block : 
-            expression_block
-            {
-              $$ = single_Expressions($1);
-            }
-            | expressions_block expression_block 
-            {
-              $$ = append_Expressions($1, single_Expressions($2))
-            }
-            ;
-    expressions_list :
-            ',' expression
-            {
-              $$ = single_Expressions($2);
-            }
-            | ',' expression ',' expressions_list
-            {
-              $$ = append_Expressions(single_Expressions($2), $4);
-            }
-            ;
+   
 
     dispatch : /* a method call -> 3 main formats e.id(e,e,e...) , id(e,e,..) , e@type.id(e,e,....) */
             /* format #1, #2 dispatch(expr : Expression; name : Symbol; actual : Expressions) : Expression; */
@@ -326,49 +300,52 @@
               $$ = dispatch($1, $3, $5, append_Expressions(single_Expressions($7), $8));
             }
 
-    expression_block :
+    expression_block : 
             expression ';' /* a single line expression inside a { } block */
             {
-              /*  */
+              $$ = $1
             }
             ;
-
-    expressions_block :
+    expressions_block : /* one or more expressions inside a { } block */
             expression_block 
             {
-              /*  */
+              $$ = single_Expressions($1);
             }
-            | expressions_block expression_block
+            | expressions_block expression_block 
             {
-              /*  */
+              $$ = append_Expressions($1, single_Expressions($2))
+            }
+            ;
+    expressions_list :
+            ',' expression
+            {
+              $$ = single_Expressions($2);
+            }
+            | ',' expression ',' expressions_list
+            {
+              $$ = append_Expressions(single_Expressions($2), $4);
             }
             ;
 
     let_assign :
-            OBJECTID ':' TYPEID
             {
-              /*  */
+              $$ = no_expr();
             }
-            | OBJECTID ':' TYPEID ASSIGN expression
+            | ASSIGN expression
             {
-              /*  */
-            }
-            ;
-    let_assign_list :
-            let_assign
-            {
-              /*  */
-            }
-            | let_assign_list ',' let_assign
-            {
-              /*  */
+              /* to terminate a list of assignments / may be only one assign expression*/
+              $$ = $2;
             }
             ;
-    let_expression :
-            let_assign_list IN expression
+    let_expression : 
+            /* let(identifier, type_decl: Symbol; init, body: Expression): Expression; */
+            OBJECTID ':' TYPEID let_assign IN expression
             {
               /*  */
+              $$ = let($1, $3, $4, $6);
             }
+            | OBJECTID ':' TYPEID let_assign ',' let_expression
+              $$ = let($1, $3, $4, $6);
             ;
     
     case : 
