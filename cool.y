@@ -140,6 +140,8 @@
     %type <features> feature_list
     %type <formal> formal
     %type <formals> formal_list
+    %type <case_> case
+    %type <cases> cases
     %type <expression> expression
     %type <expression> expression_block
     %type <expression> dispatch
@@ -299,7 +301,7 @@
               /*  */
               $$ = dispatch($1, $3, $5, append_Expressions(single_Expressions($7), $8));
             }
-
+            ;
     expression_block : 
             expression ';' /* a single line expression inside a { } block */
             {
@@ -354,13 +356,13 @@
               $$ = branch($1, $3, $5);
             }
             ;
-    case_expression :
+    cases :
             /* At least one or more branch */
             case
             {
               $$ = single_Cases($1);
             }
-            | case_expression case
+            | cases case
             {
               $$ = append_Cases($1, single_Cases($2));
             }
@@ -369,68 +371,75 @@
     expression : /* all possible expressions as mentioned in cool manual */
             OBJECTID ASSIGN expression
             {
-              /*  */
+              /* assign(name : Symbol; expr : Expression) : Expression; */
+              $$ = assign($1, $3);
             }
             | dispatch
             {
-              /*  */
+              $$ = $1;
             }
             | IF expression THEN expression ELSE expression FI
             {
-              /*  */
+              /* cond(pred, then_exp, else_exp : Expression): Expression; */
+              $$ = cond($2, $4, $6);
             }
             | WHILE expression LOOP expression POOL
             {
-              /*  */
+              /* loop(pred, body: Expression) : Expression; */
+              $$ = loop($2, $4);
             }
             | '{' expressions_block '}'
             {
-              /*  */
+              /* block(body: Expressions) : Expression; */
+              $$ = block($2);
             }
             | LET let_expression
             {
-              /*  */
+              $$ = $2;
             }
-            | CASE case_expression ESAC
+            | CASE expression OF cases ESAC
             {
-              /*  */
+              /* typcase(expr: Expression; cases: Cases): Expression; */
+              $$ = typcase($2, $4);
             }
             | NEW TYPEID
             {
-              /*  */
+              /* new_(type_name: Symbol): Expression; */
+              $$ = new_($2);
             }
             | ISVOID expression
             {
-              /*  */
+              /* isvoid(e1: Expression): Expression; */
+              $$ = isvoid($2);
             }
-            | expression '+' expression  { /* arithmatic + */ }
-            { /*  */ }
-            | expression '-' expression  { /* arithmatic - */ }
-            { /*  */ }
-            | expression '*' expression  { /* arithmatic * */ } 
-            { /*  */ }
-            | expression '/' expression  { /* arithmatic / */ } 
-            { /*  */ }
+            | expression '+' expression  /* arithmatic + */
+            { $$ = plus($1, $3) }
+            | expression '-' expression  /* arithmatic - */
+            { $$ = sub($1, $3) }
+            | expression '*' expression  /* arithmatic * */ 
+            { $$ = mul($1, $3) }
+            | expression '/' expression  /* arithmatic / */ 
+            { $$ = divide($1, $3) }
             | '~' expression 
-            { /*  */ }
-            | expression '<' expression   { /* Comparison */ }
-            { /*  */ }
-            | expression LE expression   { /* Comparison */ } 
-            { /*  */ }
-            | expression '=' expression   { /* Comparison */ } 
-            { /*  */ }
+            { $$ = neg($2) }
+            | expression '<' expression   /* Comparison */
+            { $$ = lt($1, $3) }
+            | expression LE expression   /* Comparison */ 
+            { $$ = leq($1, $3) }
+            | expression '=' expression   /* Comparison */ 
+            { $$ = eq($1, $3) }
             | NOT expression 
-            { /*  */ }
+            { $$ = comp($2) }
             | '(' expression ')' 
-            { /*  */ }
+            { $$ = $2 }
             | OBJECTID 
-            { /*  */ }
+            { $$ = object($1); }
             | INT_CONST 
-            { /*  */ }
+            { $$ = int_const($1); }
             | STR_CONST 
-            { /*  */ }
+            { $$ = string_const($1); }
             | BOOL_CONST 
-            { /*  */ }
+            { $$ = bool_const($1); }
             ;
 
 
