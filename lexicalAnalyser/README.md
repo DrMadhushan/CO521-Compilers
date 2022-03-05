@@ -222,14 +222,14 @@ White spaces
 ## **Testing:**
 
 Test program directories:<br>
-`./tests/`	<br>
+`./tests/examples/`	<br>
 `./tests/errors/`
 
 Maximum possible test cases are tested
-the `./tests` directory contains several functioning COOL programs to test whether the designed lexer imitates the tokenizing functionality of the pre-built lexer in error-free condition.
+the `./tests/examples/` directory contains several functioning COOL programs to test whether the designed lexer imitates the tokenizing functionality of the pre-built lexer in error-free condition.
 
 Possible errors in each rule defined are tested using individual files in `./tests/errors/` directory.
 
-Testing is done using a shell script `./evaluate.sh` to compare the results produced by pre-built lexer (`./benchmark/lexer`) and our lexer (`./lexer`).
+Testing is done using a shell script `./tests/evaluate.sh` to compare the results produced by pre-built lexer (`./benchmark/lexer`) and our lexer (`./lexer`).
 
-The `evaluate.sh` will loop through all the files in `./tests` and `./tests/errors/` directories with `.cl` extension and prints the result for each test case as `'passed'` or `'failed'` with the difference.
+The `evaluate.sh` will loop through all the files in `./tests/examples/` and `./tests/errors/` directories with `.cl` extension and prints the result for each test case as `'passed'` or `'failed'` with the difference.
