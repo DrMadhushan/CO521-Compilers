@@ -151,6 +151,7 @@
     %type <expressions> expressions_list
     
     /* Precedence declarations go here. */
+    %precedence LET
     %right ASSIGN
     %precedence NOT
     %nonassoc '<' '=' LE
@@ -390,7 +391,7 @@
               /* block(body: Expressions) : Expression; */
               $$ = block($2);
             }
-            | LET let_expression
+            | LET let_expression /* let_expression should go as long as code allow (let should capture all of them) */
             {
               $$ = $2;
             }
