@@ -215,17 +215,13 @@
             ;
 
     feature_list :
-            {
-              /* empty feature list -> refer (cool-tree.cc) */
-              $$ = nil_Features();
-            }
-            | feature
+            feature
             {
               $$ = single_Features($1);
             }
             | feature_list feature
             {
-              $$ = append_Features($1, $2);
+              $$ = append_Features($1, single_Features($2));
             }
             ;
 
