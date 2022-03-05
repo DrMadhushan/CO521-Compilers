@@ -142,12 +142,12 @@
     %type <formals> formal_list
     %type <expression> expression
     %type <expression> expression_block
-    %type <expressions> expressions_block
-    %type <expressions> expressions_list
     %type <expression> dispatch
     %type <expression> let_assign
-    %type <expressions> let_assign_list
     %type <expression> let_expression
+    %type <expressions> expressions_block
+    %type <expressions> expressions_list
+    %type <expressions> let_assign_list
     
     /* Precedence declarations go here. */
     %right ASSIGN
@@ -246,35 +246,34 @@
             }
             | formal_list ',' formal
             {
-              $$ = append_Formals($1, $3);
+              $$ = append_Formals($1, single_Formals($3));
             }
             ;
             
     expression_block : 
             expression ';'
             {
-              /*  */
+              $$ = $1
             }
             ;
     expressions_block : 
             expression_block
             {
-              /*  */
+              $$ = single_Expressions($1);
             }
-            | expression_block expression 
+            | expressions_block expression_block 
             {
-              /*  */
+              $$ = append_Expressions($1, single_Expressions($2))
             }
             ;
-
     expressions_list :
             ',' expression
             {
-              /*  */
+              $$ = single_Expressions($2);
             }
             | ',' expression ',' expressions_list
             {
-              /*  */
+              $$ = append_Expressions(single_Expressions($2), $4);
             }
             ;
 
