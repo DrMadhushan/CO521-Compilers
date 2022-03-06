@@ -1,5 +1,10 @@
 /*
  *  The scanner definition for COOL.
+ *  -------------------------------
+ *  Group 01
+ *  E/17/194 Madhushan R.
+ *  E/17/338 Srimal R.M.L.C.
+ *  -------------------------------
  */
 
 /*
@@ -189,15 +194,18 @@ LE      <=
 <STRING>\n  {
     curr_lineno++;
     cool_yylval.error_msg = "Unterminated string constant";
-    BEGIN(INVALID_STRING);
+    BEGIN(INITIAL);
     return ERROR;
 }
 
     /* VALID escaped newline is accepted but it won't be counted as actual new line (should explicitely code as "...\n..." in the string)*/
-<STRING>\\\n    { curr_lineno++; }
+<STRING>\\\n    { 
+    curr_lineno++;
+        *string_buf_ptr++ = '\n'; 
+    }
 
     /* String can't contain null character */
-<STRING>\0 {
+<STRING>\\\0 {
     cool_yylval.error_msg = "String contains null character";
     BEGIN(INVALID_STRING);
     return ERROR;
@@ -244,16 +252,23 @@ LE      <=
 
 <STRING>. {
   if (strlen(yytext) + strlen(string_buf) > MAX_STR_CONST - 1){
-    cool_yylval.error_msg = "String is too long";
+    cool_yylval.error_msg = "String constant too long";
       BEGIN(INVALID_STRING);
       return ERROR;
   }
-  *string_buf_ptr++ = yytext[0];
+
+    *string_buf_ptr++ = yytext[0]; 
   
 }
 
     /* If error occurs (INVALID_STRING state) termination of a string happens with \" or unescaped \n */
-<INVALID_STRING>(\"|\n) {BEGIN(INITIAL);}
+<INVALID_STRING>([\"]|[^\\]\n) {        
+    BEGIN(INITIAL);
+}
+
+<INVALID_STRING>\n  {curr_lineno++;}
+
+<INVALID_STRING>.   {}
 
 
     /* Comments */
@@ -266,6 +281,7 @@ LE      <=
     cool_yylval.error_msg = "Unmatched *)";
     return ERROR;
 }
+
 
 \(\* {
     comment_level = 1;
@@ -300,10 +316,13 @@ LE      <=
 
 <COMMENT>. {}
 
-    /* Whitespace and leftovers */
 
-{WHITESPACE}    ;
-\n+             curr_lineno += yyleng;
+    /* Whitespace */
+
+{WHITESPACE}    {}
+\n+             {curr_lineno += yyleng;}
+    
+    /*invalid characters*/
 .               {
                 cool_yylval.error_msg = yytext;
                 return ERROR;

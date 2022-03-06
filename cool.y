@@ -40,13 +40,13 @@
     * (fictional) construct that matches a plus between two integer constants. 
     * (SUCH A RULE SHOULD NOT BE  PART OF YOUR PARSER):
     
-    plus_consts	: INT_CONST '+' INT_CONST 
+    plus_consts : INT_CONST '+' INT_CONST 
     
     * where INT_CONST is a terminal for an integer constant. Now, a correct
     * action for this rule that attaches the correct line number to plus_const
     * would look like the following:
     
-    plus_consts	: INT_CONST '+' INT_CONST 
+    plus_consts : INT_CONST '+' INT_CONST 
     {
       // Set the line number of the current non-terminal:
       // ***********************************************
@@ -80,7 +80,7 @@
     /************************************************************************/
     /*                DONT CHANGE ANYTHING IN THIS SECTION                  */
     
-    Program ast_root;	      /* the result of the parse  */
+    Program ast_root;       /* the result of the parse  */
     Classes parse_results;        /* for use in semantic analysis */
     int omerrs = 0;               /* number of errors in lexing and parsing */
     %}
@@ -166,16 +166,16 @@
     /* 
     Save the root of the abstract syntax tree in a global variable.
     */
-    program	: class_list	{ @$ = @1; ast_root = program($1); }
+    program : class_list  { @$ = @1; ast_root = program($1); }
             ;
     
     class_list
-            : class			/* single class */
+            : class     /* single class */
             { 
               $$ = single_Classes($1);
               parse_results = $$; 
             }
-            | class_list class	/* several classes */
+            | class_list class  /* several classes */
             { 
               $$ = append_Classes($1, single_Classes($2)); 
               parse_results = $$; 
@@ -183,7 +183,7 @@
             ;
             
     /* If no parent is specified, the class inherits from the Object class. */
-    class	  : 
+    class   : 
             CLASS TYPEID '{' feature_list '}' ';'
             { 
               $$ = class_($2, idtable.add_string("Object"), $4, stringtable.add_string(curr_filename)); 
@@ -195,7 +195,7 @@
             ;
     
     /* Feature list may be empty, but no empty features in list. */
-    /* dummy_feature_list:		/* empty */
+    /* dummy_feature_list:    /* empty */
     /* {  $$ = nil_Features(); } */
     
     feature :
@@ -285,23 +285,23 @@
             | expression '@' TYPEID '.' OBJECTID '(' ')' /* empty args #3 */
             {
               /*  */
-              $$ = dispatch($1, $3, $5, nil_Expressions());
+              $$ = static_dispatch($1, $3, $5, nil_Expressions());
             }
             | expression '@' TYPEID '.' OBJECTID '(' expression ')' /* single arg expression #3 */
             {
               /*  */
-              $$ = dispatch($1, $3, $5, single_Expressions($7));
+              $$ = static_dispatch($1, $3, $5, single_Expressions($7));
             }
             | expression '@' TYPEID '.' OBJECTID '(' expression expressions_list ')' /* multiple (comma seperated) expressions as argument #3 */
             {
               /*  */
-              $$ = dispatch($1, $3, $5, append_Expressions(single_Expressions($7), $8));
+              $$ = static_dispatch($1, $3, $5, append_Expressions(single_Expressions($7), $8));
             }
             ;
     expression_block : 
             expression ';' /* a single line expression inside a { } block */
             {
-              $$ = $1
+              $$ = $1;
             }
             ;
     expressions_block : /* one or more expressions inside a { } block */
@@ -311,7 +311,7 @@
             }
             | expressions_block expression_block 
             {
-              $$ = append_Expressions($1, single_Expressions($2))
+              $$ = append_Expressions($1, single_Expressions($2));
             }
             ;
     expressions_list :
@@ -411,25 +411,25 @@
               $$ = isvoid($2);
             }
             | expression '+' expression  /* arithmatic + */
-            { $$ = plus($1, $3) }
+            { $$ = plus($1, $3); }
             | expression '-' expression  /* arithmatic - */
-            { $$ = sub($1, $3) }
+            { $$ = sub($1, $3); }
             | expression '*' expression  /* arithmatic * */ 
-            { $$ = mul($1, $3) }
+            { $$ = mul($1, $3); }
             | expression '/' expression  /* arithmatic / */ 
-            { $$ = divide($1, $3) }
+            { $$ = divide($1, $3); }
             | '~' expression 
-            { $$ = neg($2) }
+            { $$ = neg($2); }
             | expression '<' expression   /* Comparison */
-            { $$ = lt($1, $3) }
+            { $$ = lt($1, $3); }
             | expression LE expression   /* Comparison */ 
-            { $$ = leq($1, $3) }
+            { $$ = leq($1, $3); }
             | expression '=' expression   /* Comparison */ 
-            { $$ = eq($1, $3) }
+            { $$ = eq($1, $3); }
             | NOT expression 
-            { $$ = comp($2) }
+            { $$ = comp($2); }
             | '(' expression ')' 
-            { $$ = $2 }
+            { $$ = $2; }
             | OBJECTID 
             { $$ = object($1); }
             | INT_CONST 
