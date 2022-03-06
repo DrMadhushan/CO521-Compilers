@@ -192,6 +192,18 @@
             { 
               $$ = class_($2, $4, $6, stringtable.add_string(curr_filename)); 
             }
+            | CLASS TYPEID '{' error '}' ';'
+            {
+              yyerror("Class Error\n");
+            }
+            | CLASS error '{' feature_list '}' ';'
+            {
+              yyerror("Class Error\n");
+            }
+            | CLASS error '{' error '}' ';'
+            {
+              yyerror("Class Error\n");
+            }
             ;
     
     /* Feature list may be empty, but no empty features in list. */
@@ -223,6 +235,10 @@
             | feature_list feature
             {
               $$ = append_Features($1, single_Features($2));
+            }
+            | error ';' 
+            {
+              yyerror("");
             }
             ;
 
@@ -313,6 +329,10 @@
             {
               $$ = append_Expressions($1, single_Expressions($2))
             }
+            | error ';'
+            {
+              yyerror("");
+            }
             ;
     expressions_list :
             ',' expression
@@ -345,6 +365,10 @@
             | OBJECTID ':' TYPEID let_assign ',' let_expression
             {
               $$ = let($1, $3, $4, $6);
+            }
+            | error ',' 
+            {
+              yyerror("");
             }
             ;
     
