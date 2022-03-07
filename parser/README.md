@@ -131,95 +131,18 @@ Instructions
 Write-up for PA3
 ----------------
 
-## **Precedence declarations:**
 
-	Three types of Precedence,
-		
-		1) Left associative - Priority level of the precedence is,
-			.
-			@
-			~
-			ISVOID
-			* /
-			+ -
-			< =
-			NOT
-		
-		2) Right associative
-			LET & ASSIGN are the only right right associative precedence
 
-		3) Non associative
-			LE , <  and =  haven't priority level
-
-		Therefore precidece can be decalred as,
-		    %precedence LETEXP
-    		%right ASSIGN
-    		%precedence NOT
-    		%nonassoc '<' '=' LE
-    		%left '+' '-'
-    		%left '*' '/'
-    		%precedence ISVOID
-    		%precedence '~'
-    		%precedence '@'
-    		%precedence '.'
-
-## **Grammar Rules:**
-		
-	The rules for COOL programming language are defined in here. 
-
-	* Description of each rule *
-	
-		1) program
-			Already implemented in the skeleton code.
-			Program contains class_list (one or more classes)
-
-		2) class_list
-			Already implemented in the skeleton code.
-			class_list is a non-terminal which contains atleast one class.
-
-		3) class
-			Describes productions of a class. class may have zero or more features.
-			There are two types of classes,
-				(i) Without a parent
-					class TYPE { feature_list };
-				(ii) With a parent
-					class TYPE inherits TYPE { feature_list };
-			If an error is found next to class, it is skipped.
-
-		4) feature
-			There are two types of features,
-			(i) methods
-				OBJECTID '(' formal_list ')' ':' TYPEID '{' expression '}' ';'
-			(ii) attributes without initilization
-				OBJECTID ':' TYPEID ';'
-			(iii) attributes with initilization
-				OBJECTID ':' TYPEID ASSIGN expression ';'
-
-		5) feature_list
-			feature_list may consist of empty or non-empty feature_list
-			If an error is found in one feature, it is skiped and parsing is started from next feature.
-
-		6) non_empty_feature_list
-		7) formal
-		8) formal_list
-		9) dispatch
-		10) expression_block
-		11) expressions_block
-		12) expressions_list
-		13) let_assign
-		14) let_expression
-		15) case
-		16) cases
-		17) expression
 
 ## **Testing:**
 
-	Maximum possible test cases are tested using good.cl and bad.cl. All the COOL programs in examples directory, used to test the parser for error-free programs. bad.cl contains an errorness COOL program to check following conditions, 
-		(1) Errors in features in classes
-		(2) Error in blocks
-		(3) Errors in the let expression
-		(4) Errors in variable list and the body
-		(5) Error in a the variable list
+		Maximum possible test cases are tested using good.cl and bad.cl. good.cl contains an error-free COOL program. bad.cl contains an errorness COOL program to check following conditions, 
+			(1) Errors in features in classes
+			(2) Error in blocks
+			(3) Errors in the let expression
+			(4) Errors in variable list and the body
+			(5) Error in a the variable list
 
-	All possible testcases are giving the same results as the inbuild parser results.Parser is compiled without any confilcts.
+		All possible testcases are giving the same results as the inbuild parser results.
+		Parser is compiled without any confilcts.
  
