@@ -142,6 +142,7 @@
     /* %type <features> dummy_feature_list */
     %type <feature> feature
     %type <features> feature_list
+    %type <features> non_empty_feature_list
     %type <formal> formal
     %type <formals> formal_list
     %type <case_> case
@@ -155,7 +156,7 @@
     %type <expressions> expressions_list
     
     /* Precedence declarations go here. */
-    %precedence LET
+    %precedence LETEXP
     %right ASSIGN
     %precedence NOT
     %nonassoc '<' '=' LE
@@ -225,18 +226,25 @@
             ;
 
     feature_list :
-      {
-                $$ = nil_Features();
+            {
+              $$ = nil_Features();
             }
-            |feature
+            | non_empty_feature_list 
+            {
+              $$ = $1;
+            }
+            | error ';' { }
+            ;
+
+    non_empty_feature_list :
+            feature
             {
               $$ = single_Features($1);
             }
-            | feature_list feature
+            | non_empty_feature_list feature
             {
               $$ = append_Features($1, single_Features($2));
             }
-            | error ';' { }
             ;
 
     formal :
@@ -351,7 +359,7 @@
             ;
     let_expression : 
             /* let(identifier, type_decl: Symbol; init, body: Expression): Expression; */
-            OBJECTID ':' TYPEID let_assign IN expression
+            OBJECTID ':' TYPEID let_assign IN expression %prec LETEXP
             {
               /*  */
               $$ = let($1, $3, $4, $6);
@@ -406,7 +414,7 @@
               /* block(body: Expressions) : Expression; */
               $$ = block($2);
             }
-            | LET let_expression /* let_expression should go as long as code allow (let should capture all of them) */
+            | LET let_expression  /* let_expression should go as long as code allow (let should capture all of them) */
             {
               $$ = $2;
             }
