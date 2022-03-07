@@ -192,18 +192,9 @@
             { 
               $$ = class_($2, $4, $6, stringtable.add_string(curr_filename)); 
             }
-            | CLASS TYPEID '{' error '}' ';'
-            {
-              yyerror("Class Error\n");
-            }
-            | CLASS error '{' feature_list '}' ';'
-            {
-              yyerror("Class Error\n");
-            }
-            | CLASS error '{' error '}' ';'
-            {
-              yyerror("Class Error\n");
-            }
+            | CLASS TYPEID '{' error '}' ';' { }
+            | CLASS error '{' feature_list '}' ';' { }
+            | CLASS error '{' error '}' ';' { }
             ;
     
     /* Feature list may be empty, but no empty features in list. */
@@ -236,10 +227,7 @@
             {
               $$ = append_Features($1, single_Features($2));
             }
-            | error ';' 
-            {
-              yyerror("");
-            }
+            | error ';' { }
             ;
 
     formal :
@@ -329,10 +317,7 @@
             {
               $$ = append_Expressions($1, single_Expressions($2));
             }
-            | error ';'
-            {
-              yyerror("");
-            }
+            | error ';' { }
             ;
     expressions_list :
             ',' expression
@@ -366,10 +351,7 @@
             {
               $$ = let($1, $3, $4, $6);
             }
-            | error ',' 
-            {
-              yyerror("");
-            }
+            | error ','  { }
             ;
     
     case : /* branch(name, type_decl: Symbol; expr: Expression): Case; */
