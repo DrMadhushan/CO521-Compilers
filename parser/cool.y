@@ -219,10 +219,10 @@
             {
               $$ = attr($1, $3, $5);
             }
-        /*error handling*/
-      | OBJECTID '(' error ')' ':' TYPEID '{' expression '}' ';'  {}
-      | OBJECTID '(' formal_list ')' ':' TYPEID '{' error '}' ';' {}
-      | OBJECTID '(' error ')' ':' TYPEID '{' error '}' ';' {}
+              /*error handling*/
+            | OBJECTID '(' error ')' ':' TYPEID '{' expression '}' ';'  {}
+            | OBJECTID '(' formal_list ')' ':' TYPEID '{' error '}' ';' {}
+            | OBJECTID '(' error ')' ':' TYPEID '{' error '}' ';' {}
             ;
 
     feature_list :
@@ -236,7 +236,7 @@
             | error ';' { }
             ;
 
-    non_empty_feature_list :
+    non_empty_feature_list :  /* to handle shift/reduce conflict*/
             feature
             {
               $$ = single_Features($1);
@@ -359,7 +359,7 @@
             ;
     let_expression : 
             /* let(identifier, type_decl: Symbol; init, body: Expression): Expression; */
-            OBJECTID ':' TYPEID let_assign IN expression %prec LETEXP
+            OBJECTID ':' TYPEID let_assign IN expression %prec LETEXP   /* To handle shift/reduce conflicts */
             {
               /*  */
               $$ = let($1, $3, $4, $6);

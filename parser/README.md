@@ -146,3 +146,48 @@ Write-up for PA3
 		All possible testcases are giving the same results as the inbuild parser results.
 		Parser is compiled without any confilcts.
  
+## **Context Free Grammer for COOL** ##
+ 
+<img src="cfg.png" alt="cfg" width="500px"/>
+
+	Constructed CFG rules according to the above cool syntax defined in cool manual.
+
+## **Handling Shift/Reduce & Reduce/Reduce Conflicts** ##
+
+When feature_list can be further reduced to an empty features, a derivation can unnecessarily go on a loop of reductions.
+
+	Example: • OBJECTID '(' ')' ':' TYPEID '{' expression '}' ';'
+	Shift derivation
+		feature_list
+		↳ 14: feature
+			↳ 7: • OBJECTID '(' formal_list ')' ':' TYPEID '{' expression '}' ';'
+								↳ 7: ε
+	Reduce derivation
+		feature_list
+		↳ 15: feature_list feature
+			↳ 13: ε •    ↳ 7: OBJECTID '(' formal_list ')' ':' TYPEID '{' expression '}' ';'
+	
+This conflict was eliminated by defining a non-empty feature_list derivation seperately since empty feature is also acceptable at some cases in COOL.
+
+
+In a LET expression the `expression` in the `IN expression` clause can be shifted or reduced. 
+
+	Example: LET OBJECTID ':' TYPEID let_assign IN expression • '.' OBJECTID '(' ')'
+	Shift derivation
+		expression
+		↳ 50: LET let_expression
+				↳ 39: OBJECTID ':' TYPEID let_assign IN expression
+														↳ 46: dispatch
+																↳ 22: expression • '.' OBJECTID '(' ')'
+	Reduce derivation
+		expression
+		↳ 46: dispatch
+			↳ 22: expression                                                     '.' OBJECTID '(' ')'
+					↳ 50: LET let_expression
+							↳ 39: OBJECTID ':' TYPEID let_assign IN expression •
+
+By default, bison shifts instead of reducing, which is preferred in COOL syntax. As mentioned in cool manual,<br> 
+`let <id1> : <type1> [ <- <expr1> ], ..., <idn> : <typen> [ <- <exprn> ] in <expr>` <br>
+The `<expr>` of a let extends as far (encompasses as many tokens) as the grammar allows.
+
+To eleminate the conflict, `%prec SPECIAL_TOKEN` has been added to `IN expression` grammer rule and given the lowest precedence to `SPECIAL_TOKEN` to capture all possible tokens in an expression (`<expr>`).
