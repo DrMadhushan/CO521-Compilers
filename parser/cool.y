@@ -1,7 +1,11 @@
 /*
 *  cool.y
-*              Parser definition for the COOL language.
-*
+*  Parser definition for the COOL language.
+*  -------------------------------
+*  Group 01
+*  E/17/194 Madhushan R.
+*  E/17/338 Srimal R.M.L.C.
+*  -------------------------------
 */
 %{
   #include <iostream>
@@ -192,9 +196,7 @@
             { 
               $$ = class_($2, $4, $6, stringtable.add_string(curr_filename)); 
             }
-            | CLASS TYPEID '{' error '}' ';' { }
-            | CLASS error '{' feature_list '}' ';' { }
-            | CLASS error '{' error '}' ';' { }
+            | CLASS error ';' { }
             ;
     
     /* Feature list may be empty, but no empty features in list. */
@@ -216,10 +218,17 @@
             {
               $$ = attr($1, $3, $5);
             }
+        /*error handling*/
+      | OBJECTID '(' error ')' ':' TYPEID '{' expression '}' ';'  {}
+      | OBJECTID '(' formal_list ')' ':' TYPEID '{' error '}' ';' {}
+      | OBJECTID '(' error ')' ':' TYPEID '{' error '}' ';' {}
             ;
 
     feature_list :
-            feature
+      {
+                $$ = nil_Features();
+            }
+            |feature
             {
               $$ = single_Features($1);
             }
@@ -464,5 +473,4 @@
       
       if(omerrs>50) {fprintf(stdout, "More than 50 errors\n"); exit(1);}
     }
-    
     
